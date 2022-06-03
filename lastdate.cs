@@ -15,7 +15,6 @@
 			DateTime? lastTicketDateEconomy = null;
 			DateTime? lastTicketDateBusiness = null;
 			DateTime? lastTicketDatePremiumEcon = null;
-
 			try
 			{
 				// Get Economy and Business LDTP dates if avail and return earliest
@@ -27,30 +26,6 @@
 
 				var carrier = XmlUtils.GetXmlNodeText(firstFlightNode, "Carrier");
 
-				if (fakeSouthwestLdtpEnabled && carrier.Equals("WN"))
-				{
-
-					var departDateLocal = DateTime.Parse(XmlUtils.GetXmlNodeText(firstFlightNode, "DepDateTime"));
-					var depAirport = XmlUtils.GetXmlNodeText(firstFlightNode, "DepAirp");
-					var departDateTimeUtc = GetAirportDateTimeUtc(departDateLocal, depAirport);
-
-					var dateDiffInHours = departDateTimeUtc.Subtract(bookingDateTimeUtc).TotalHours;
-					var southWestFareNode = fareNode.XPathSelectElement("self::Fare[number(@govFareTypeCode) = " + ((int)GovernmentFareType.GovernmentContractBusiness).ToString() +
-																			   " or number(@govFareTypeCode) = " + ((int)GovernmentFareType.GovernmentContractDiscounted).ToString() +
-																			   " or number(@govFareTypeCode) = " + ((int)GovernmentFareType.GovernmentContractPremiumEcon).ToString() +
-																			   " or number(@govFareTypeCode) = " + ((int)GovernmentFareType.GovernmentContract).ToString() + "]");
-
-					if (dateDiffInHours >= 72 && southWestFareNode != null)
-					{
-						returnValue = departDateTimeUtc.AddDays(-2.0);
-					}
-					else
-					{
-						m_tmtLogger.LogMessage("dateDiffInHours less than 72h or southWestFareNode was not set. Unable to calculate last ticket date", "AirExchange", "GSA Last Ticket Date", "AirHelper");
-					}
-				}
-				else
-				{
 					if (flightNodeEconomy != null)
 					{
 						carrier = XmlUtils.GetXmlNodeText(flightNodeEconomy, "Carrier");
@@ -110,7 +85,6 @@
 						returnValue = null;
                     }
 				}
-			}
 			catch (Exception exception)
 			{
 				m_tmtLogger.LogError(exception, "AirExchange", "GetGsaCityPairLastTicketDateFromFare", true, "GSA Last Ticket Date not set. Falling back to non-GSA calculations.");
